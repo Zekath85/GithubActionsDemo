@@ -35,7 +35,8 @@ jobs:
         name: app-artifacts
         path: ./publish
 
- deploy:
+
+  deploy:
     runs-on: self-hosted
     needs: build
 
@@ -56,4 +57,4 @@ jobs:
 
     - name: Start the application service
       run: |
-        sudo systemctl start GithubActionsDemo.service
+        sudo systemctl start GithubActionsDemo.service        
