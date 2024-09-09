@@ -47,10 +47,10 @@ jobs:
     - name: Check out this repo
       uses: actions/checkout@v4
 
-    # Docker login using env variables for username/password
+    # Docker login using --password-stdin
     - name: Log in to Docker Hub
       run: |
-        docker login -u $DOCKER_USER -p $DOCKER_PW
+        echo "$DOCKER_PW" | docker login -u "$DOCKER_USER" --password-stdin
 
     # Build Docker image
     - name: Build Docker image
