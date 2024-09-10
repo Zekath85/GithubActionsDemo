@@ -22,4 +22,7 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 
+// Listen on port 5000
+app.Urls.Add("http://*:5000");
+
 app.Run();
