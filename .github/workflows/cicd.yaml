@@ -1,4 +1,4 @@
-# This workflow creates a Dockerfile, builds the Docker image, and pushes it to Docker Hub
+# This workflow will build a Docker image and push it to Docker Hub
 
 name: Build and Push Docker Image
 
@@ -6,16 +6,30 @@ on:
   push:
     branches:
       - "master"
+  workflow_dispatch:
 
 jobs:
-  docker:
+  build_and_push:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Check out the repository
+    - name: Check out this repo
       uses: actions/checkout@v4
 
-    - name: Create a Dockerfile
+    - name: Install .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies (install Nuget packages)
+      run: dotnet restore
+
+    - name: Build and publish the app
+      run: |
+        dotnet build --no-restore
+        dotnet publish -c Release -o ./publish
+
+    - name: Create Dockerfile
       run: |
         cat <<EOF > Dockerfile
         # Use the .NET SDK to build the project
@@ -25,7 +39,7 @@ jobs:
         RUN dotnet restore "GithubActionsDemo.csproj"
         RUN dotnet build "GithubActionsDemo.csproj" -c Release --no-restore
         RUN dotnet publish "GithubActionsDemo.csproj" -c Release -o /app/publish
-
+        
         # Use the ASP.NET runtime to run the app
         FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
         WORKDIR /app
@@ -34,14 +48,10 @@ jobs:
         EOF
 
     - name: Log in to Docker Hub
-      env:
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PW }}
-      run: |
-        echo "${{ env.DOCKER_PASSWORD }}" | docker login -u "${{ env.DOCKER_USERNAME }}" --password-stdin
+      run: echo "${{ secrets.DOCKER_PW }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-    - name: Build Docker image from generated Dockerfile
-      run: docker build -t zekath/mydotnetapp:latest .
+    - name: Build Docker image
+      run: docker build -t mydockerhubusername/mydotnetapp:latest .
 
     - name: Push Docker image to Docker Hub
-      run: docker push zekath/mydotnetapp:latest
+      run: docker push mydockerhubusername/mydotnetapp:latest
