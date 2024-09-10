@@ -51,7 +51,7 @@ jobs:
       run: echo "${{ secrets.DOCKER_PW }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
     - name: Build Docker image
-      run: docker build -t mydockerhubusername/mydotnetapp:latest .
+      run: docker build -t zekath/mydotnetapp:latest .
 
     - name: Push Docker image to Docker Hub
-      run: docker push mydockerhubusername/mydotnetapp:latest
+      run: docker push zekath/mydotnetapp:latest
