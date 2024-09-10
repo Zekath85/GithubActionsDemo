@@ -16,7 +16,7 @@ jobs:
 
     - name: Build the Docker image
       working-directory: path
-      run: docker build . -t docker-hub-zekath/mydotnetapp:latest
+      run: docker build . -t zekath/mydotnetapp:latest
 
 
     - name: Log in to Docker Hub
@@ -27,7 +27,7 @@ jobs:
         echo "${{ env.DOCKER_PASSWORD }}" | docker login -u "${{ env.DOCKER_USERNAME }}" --password-stdin
 
     - name: Push the images to Docker Hub
-      run: docker push docker-hub-zekath/mydotnetapp:latest
+      run: docker push zekath/mydotnetapp:latest
 
     - name: Push Docker image to Docker Hub
       run: docker push zekath/mydotnetapp:latest
