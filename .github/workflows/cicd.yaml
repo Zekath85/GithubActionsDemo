@@ -1,6 +1,6 @@
-# This workflow will build a .NET application Docker image and push it to Docker Hub
+# This workflow will build the GithubActionsDemo project and push a Docker image
 
-name: Build and Push .NET Docker Image
+name: GithubActionsDemo
 
 on:
   push:
@@ -9,48 +9,68 @@ on:
   workflow_dispatch:
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '6.0.x' # Adjust version as needed
+
+    - name: Check out this repo
+      uses: actions/checkout@v4
+
+    - name: Restore dependencies (install NuGet packages)
+      run: dotnet restore "GithubActionsDemo.csproj"
+
+    - name: Build and publish the app
+      run: |
+        dotnet build "GithubActionsDemo.csproj" --no-restore
+        dotnet publish "GithubActionsDemo.csproj" -c Release -o ./publish
+
+    - name: Upload app artifacts to Github
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-artifacts
+        path: ./publish
+
+  # Docker build and push job
   docker:
     runs-on: ubuntu-latest
-
-    env:
-      DOCKER_USER: ${{ secrets.DOCKER_USER }}
-      DOCKER_PW: ${{ secrets.DOCKER_PW }}
+    needs: build
 
     steps:
     - name: Check out this repo
       uses: actions/checkout@v4
 
-    # Step to create the Dockerfile dynamically
-    - name: Create Dockerfile
-      run: |
-        echo 'FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base' > Dockerfile
-        echo 'WORKDIR /app' >> Dockerfile
-        echo 'EXPOSE 80' >> Dockerfile
-        echo 'FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build' >> Dockerfile
-        echo 'WORKDIR /src' >> Dockerfile
-        echo 'COPY ["GithubActionsDemo/GithubActionsDemo.csproj", "GithubActionsDemo/"]' >> Dockerfile
-        echo 'RUN dotnet restore "GithubActionsDemo/GithubActionsDemo.csproj"' >> Dockerfile
-        echo 'COPY . .' >> Dockerfile
-        echo 'WORKDIR "/src/GithubActionsDemo"' >> Dockerfile
-        echo 'RUN dotnet build "GithubActionsDemo.csproj" -c Release -o /app/build' >> Dockerfile
-        echo 'FROM build AS publish' >> Dockerfile
-        echo 'RUN dotnet publish "GithubActionsDemo.csproj" -c Release -o /app/publish' >> Dockerfile
-        echo 'FROM base AS final' >> Dockerfile
-        echo 'WORKDIR /app' >> Dockerfile
-        echo 'COPY --from=publish /app/publish ./' >> Dockerfile
-        echo 'ENTRYPOINT ["dotnet", "GithubActionsDemo.dll"]' >> Dockerfile
-
-    # Log in to Docker Hub using credentials stored in GitHub Secrets
     - name: Log in to Docker Hub
-      run: |
-        echo "$DOCKER_PW" | docker login -u "$DOCKER_USER" --password-stdin
+      run: echo "${{ secrets.DOCKER_PW }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-    # Build Docker image from the newly created Dockerfile
     - name: Build Docker image
-      run: |
-        docker build -t zekath/mydotnetapp:latest .
+      run: docker build -t zekath/mydotnetapp:latest .
 
-    # Push Docker image to Docker Hub
     - name: Push Docker image
+      run: docker push zekath/mydotnetapp:latest
+
+  deploy:
+    runs-on: self-hosted
+    needs: docker
+
+    steps:
+    - name: Download the artifacts from Github (from the build job)
+      uses: actions/download-artifact@v4
+      with:
+        name: app-artifacts
+
+    - name: Stop the application service
       run: |
-        docker push zekath/mydotnetapp:latest
+        sudo systemctl stop GithubActionsDemo.service        
+
+    - name: Deploy the application
+      run: |
+        sudo rm -Rf /opt/GithubActionsDemo || true
+        sudo cp -r /home/azureuser/actions-runner/_work/GithubActionsDemo/GithubActionsDemo/ /opt/GithubActionsDemo        
+
+    - name: Start the application service
+      run: |
+        sudo systemctl start GithubActionsDemo.service
