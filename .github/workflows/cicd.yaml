@@ -28,17 +28,17 @@ jobs:
         echo 'EXPOSE 80' >> Dockerfile
         echo 'FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build' >> Dockerfile
         echo 'WORKDIR /src' >> Dockerfile
-        echo 'COPY ["YourProject/YourProject.csproj", "YourProject/"]' >> Dockerfile
-        echo 'RUN dotnet restore "YourProject/YourProject.csproj"' >> Dockerfile
+        echo 'COPY ["GithubActionsDemo/GithubActionsDemo.csproj", "GithubActionsDemo/"]' >> Dockerfile
+        echo 'RUN dotnet restore "GithubActionsDemo/GithubActionsDemo.csproj"' >> Dockerfile
         echo 'COPY . .' >> Dockerfile
-        echo 'WORKDIR "/src/YourProject"' >> Dockerfile
-        echo 'RUN dotnet build "YourProject.csproj" -c Release -o /app/build' >> Dockerfile
+        echo 'WORKDIR "/src/GithubActionsDemo"' >> Dockerfile
+        echo 'RUN dotnet build "GithubActionsDemo.csproj" -c Release -o /app/build' >> Dockerfile
         echo 'FROM build AS publish' >> Dockerfile
-        echo 'RUN dotnet publish "YourProject.csproj" -c Release -o /app/publish' >> Dockerfile
+        echo 'RUN dotnet publish "GithubActionsDemo.csproj" -c Release -o /app/publish' >> Dockerfile
         echo 'FROM base AS final' >> Dockerfile
         echo 'WORKDIR /app' >> Dockerfile
         echo 'COPY --from=publish /app/publish ./' >> Dockerfile
-        echo 'ENTRYPOINT ["dotnet", "YourProject.dll"]' >> Dockerfile
+        echo 'ENTRYPOINT ["dotnet", "GithubActionsDemo.dll"]' >> Dockerfile
 
     # Log in to Docker Hub using credentials stored in GitHub Secrets
     - name: Log in to Docker Hub
