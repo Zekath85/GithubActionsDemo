@@ -45,6 +45,9 @@ jobs:
         WORKDIR /app
         COPY --from=build /app/publish .
 
+        # Install net-tools to have access to netstat
+        RUN apt-get update && apt-get install -y net-tools
+
         # Set the environment variable to listen on port 5000
         ENV ASPNETCORE_URLS=http://+:5000
 
