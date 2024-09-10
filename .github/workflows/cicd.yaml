@@ -8,16 +8,30 @@ on:
       - "master"
 
 jobs:
-  build:
+  docker:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Check out the repository
+      uses: actions/checkout@v4
 
-    - name: Build the Docker image
-      working-directory: path
-      run: docker build . -t zekath/mydotnetapp:latest
+    - name: Create a Dockerfile
+      run: |
+        cat <<EOF > Dockerfile
+        # Use the .NET SDK to build the project
+        FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+        WORKDIR /app
+        COPY . .
+        RUN dotnet restore
+        RUN dotnet publish -c Release -o out
 
+        # Run
+        FROM mcr.microsoft.com/dotnet/aspnet:8.0
+        WORKDIR /app
+        COPY --from=build /app/out .
+        ENV ASPNETCORE_URLS=http://*:5000
+        CMD dotnet App.dll
+        EOF
 
     - name: Log in to Docker Hub
       env:
@@ -26,8 +40,8 @@ jobs:
       run: |
         echo "${{ env.DOCKER_PASSWORD }}" | docker login -u "${{ env.DOCKER_USERNAME }}" --password-stdin
 
-    - name: Push the images to Docker Hub
-      run: docker push zekath/mydotnetapp:latest
+    - name: Build Docker image from generated Dockerfile
+      run: docker build -t zekath/mydotnetapp:latest .
 
     - name: Push Docker image to Docker Hub
       run: docker push zekath/mydotnetapp:latest
