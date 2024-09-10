@@ -1,6 +1,6 @@
-# This workflow will build the Docker image from the Dockerfile and push it to Docker Hub
+# This workflow will build a .NET application Docker image and push it to Docker Hub
 
-name: Build and Push Docker Image
+name: Build and Push .NET Docker Image
 
 on:
   push:
@@ -20,17 +20,37 @@ jobs:
     - name: Check out this repo
       uses: actions/checkout@v4
 
+    # Step to create the Dockerfile dynamically
+    - name: Create Dockerfile
+      run: |
+        echo 'FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base' > Dockerfile
+        echo 'WORKDIR /app' >> Dockerfile
+        echo 'EXPOSE 80' >> Dockerfile
+        echo 'FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build' >> Dockerfile
+        echo 'WORKDIR /src' >> Dockerfile
+        echo 'COPY ["YourProject/YourProject.csproj", "YourProject/"]' >> Dockerfile
+        echo 'RUN dotnet restore "YourProject/YourProject.csproj"' >> Dockerfile
+        echo 'COPY . .' >> Dockerfile
+        echo 'WORKDIR "/src/YourProject"' >> Dockerfile
+        echo 'RUN dotnet build "YourProject.csproj" -c Release -o /app/build' >> Dockerfile
+        echo 'FROM build AS publish' >> Dockerfile
+        echo 'RUN dotnet publish "YourProject.csproj" -c Release -o /app/publish' >> Dockerfile
+        echo 'FROM base AS final' >> Dockerfile
+        echo 'WORKDIR /app' >> Dockerfile
+        echo 'COPY --from=publish /app/publish ./' >> Dockerfile
+        echo 'ENTRYPOINT ["dotnet", "YourProject.dll"]' >> Dockerfile
+
     # Log in to Docker Hub using credentials stored in GitHub Secrets
     - name: Log in to Docker Hub
       run: |
         echo "$DOCKER_PW" | docker login -u "$DOCKER_USER" --password-stdin
 
-    # Build Docker image from Dockerfile
+    # Build Docker image from the newly created Dockerfile
     - name: Build Docker image
       run: |
-        docker build -t zekath/mynginx:latest .
+        docker build -t zekath/mydotnetapp:latest .
 
     # Push Docker image to Docker Hub
     - name: Push Docker image
       run: |
-        docker push zekath/mynginx:latest
+        docker push zekath/mydotnetapp:latest
