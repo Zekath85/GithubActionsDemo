@@ -20,17 +20,17 @@ jobs:
         cat <<EOF > Dockerfile
         # Use the .NET SDK to build the project
         FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-        WORKDIR /app
+        WORKDIR /src
         COPY . .
-        RUN dotnet restore
-        RUN dotnet publish -c Release -o out
+        RUN dotnet restore "GithubActionsDemo.csproj"
+        RUN dotnet build "GithubActionsDemo.csproj" -c Release --no-restore
+        RUN dotnet publish "GithubActionsDemo.csproj" -c Release -o /app/publish
 
-        # Run
-        FROM mcr.microsoft.com/dotnet/aspnet:8.0
+        # Use the ASP.NET runtime to run the app
+        FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
         WORKDIR /app
-        COPY --from=build /app/out .
-        ENV ASPNETCORE_URLS=http://*:5000
-        CMD dotnet App.dll
+        COPY --from=build /app/publish .
+        ENTRYPOINT ["dotnet", "GithubActionsDemo.dll"]
         EOF
 
     - name: Log in to Docker Hub
