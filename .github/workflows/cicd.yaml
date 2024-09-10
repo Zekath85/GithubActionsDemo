@@ -6,33 +6,18 @@ on:
   push:
     branches:
       - "master"
-  workflow_dispatch:
 
 jobs:
-  docker:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Check out the repository
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v3
 
-    - name: Create a Dockerfile
-      run: |
-        cat <<EOF > Dockerfile
-        # Use the .NET SDK to build the project
-        FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-        WORKDIR /src
-        COPY . .
-        RUN dotnet restore "GithubActionsDemo.csproj"
-        RUN dotnet build "GithubActionsDemo.csproj" -c Release --no-restore
-        RUN dotnet publish "GithubActionsDemo.csproj" -c Release -o /app/publish
-        
-        # Use the ASP.NET runtime to run the app
-        FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
-        WORKDIR /app
-        COPY --from=build /app/publish .
-        ENTRYPOINT ["dotnet", "GithubActionsDemo.dll"]
-        EOF
+    - name: Build the Docker image
+      working-directory: path
+      run: docker build . -t docker-hub-zekath/mydotnetapp:latest
+
 
     - name: Log in to Docker Hub
       env:
@@ -41,8 +26,8 @@ jobs:
       run: |
         echo "${{ env.DOCKER_PASSWORD }}" | docker login -u "${{ env.DOCKER_USERNAME }}" --password-stdin
 
-    - name: Build Docker image from generated Dockerfile
-      run: docker build -t zekath/mydotnetapp:latest .
+    - name: Push the images to Docker Hub
+      run: docker push docker-hub-zekath/mydotnetapp:latest
 
     - name: Push Docker image to Docker Hub
       run: docker push zekath/mydotnetapp:latest
