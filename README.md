@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # CICD pipeline i ett paket
 ### När ändringar på appen pushas till `master-branch` triggas workflow och uppdaterar live till APP-servern
 
@@ -125,4 +124,3 @@ Projektet syftar till att bygga en säker infrastruktur för en **.NET-webbappli
      *Ansluter till webbservern via bastion-servern.*
 
 ---
-
