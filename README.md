@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # CICD pipeline i ett paket
 ### När ändringar på appen pushas till `master-branch` triggas workflow och uppdaterar live till APP-servern
 
@@ -92,14 +93,16 @@ Projektet syftar till att bygga en säker infrastruktur för en **.NET-webbappli
      *Detta skript skapar de virtuella maskiner och nätverksresurser som behövs för infrastrukturen.*
      *När scriptet är klart visar IP adresser till samtliga VM's*
 
-3. **Starta SSH-agent**
-   - Starta SSH-agent för att hantera SSH-nycklar:
+---
+# Starta SSH-agent
+
+1. - Starta SSH-agent för att hantera SSH-nycklar:
      ```bash
      eval $(ssh-agent)
      ```
      *SSH-agenten lagrar din privata nyckel för att möjliggöra säker anslutning utan att behöva skriva lösenord varje gång.*
 
-4. **Lägg till SSH-nyckel**
+2. **Lägg till SSH-nyckel**
    - Lägg till din SSH-nyckel:
      ```bash
      ssh-add /path/to/key
@@ -107,14 +110,14 @@ Projektet syftar till att bygga en säker infrastruktur för en **.NET-webbappli
 
      *Lägger till din privata SSH-nyckel till agenten för att kunna logga in på servrarna.*
 
-5. **Anslut till Bastion Host**
+3. **Anslut till Bastion Host**
    - SSH in till bastion-servern:
      ```bash
      ssh -A azureuser@bastion-ip-address
      ```
      *Ansluter till bastion-servern som är skyddad bakom en brandvägg. Flaggan `-A` (agent forwarding) vidarebefordrar dina lokala SSH-nycklar från SSH-agenten till bastion-servern. Detta gör att du kan använda dina nycklar för att autentisera mot andra servrar från bastion-servern utan att behöva kopiera nycklarna dit.*
 
-6. **Anslut till Web Server**
+4. **Anslut till Web Server**
    - SSH in till webbservern:
      ```bash
      ssh azureuser@10.0.0.10
@@ -122,4 +125,3 @@ Projektet syftar till att bygga en säker infrastruktur för en **.NET-webbappli
      *Ansluter till webbservern via bastion-servern.*
 
 ---
-
