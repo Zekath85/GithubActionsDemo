@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # CICD pipeline i ett paket
 ### När ändringar på appen pushas till `master-branch` triggas workflow och uppdaterar live till APP-servern
 
