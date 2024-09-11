@@ -1,5 +1,5 @@
 # Base64-enkoda cloud-init.sh
-base64 -w 0 cloud-init_dotnet.yaml > cloud-init_dotnet-base64.txt
+base64 -w 0 cloud-init_dotnet_watchtower.yaml > cloud-init_dotnet_watchtower-base64.txt
 base64 -w 0 config_reverseproxy.sh > config_reverseproxy-base64.txt
 base64 -w 0 config_bastion.sh > config_bastion-base64.txt
 
@@ -21,7 +21,7 @@ az group create --name $RG --location $LOCATION
 az deployment group create \
     --resource-group $RG \
     --template-file VM_ARM_appserver.json \
-    --parameters customDataScript="$(base64 -w 0 cloud-init_dotnet.yaml)" \
+    --parameters customDataScript="$(base64 -w 0 cloud-init_dotnet_watchtower.yaml)" \
     --parameters sshPublicKey="$(cat ~/.ssh/id_rsa.pub)"
 # Kör deployment reverseProxy
     az deployment group create \

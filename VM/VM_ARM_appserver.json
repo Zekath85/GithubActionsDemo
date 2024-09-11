@@ -86,7 +86,7 @@
             "properties": {
               "protocol": "Tcp",
               "sourcePortRange": "*",
-              "destinationPortRange": "5000",
+              "destinationPortRange": "8080",
               "sourceApplicationSecurityGroups": [
                 {
                   "id": "[resourceId('Microsoft.Network/applicationSecurityGroups', 'ProxyASG')]"

@@ -1,0 +1,53 @@
+#cloud-config
+
+# Install .Net Runtime 8.0 and Docker
+runcmd:
+  # Register Microsoft repository (which includes .Net Runtime 8.0 package)
+  - wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+  - dpkg -i packages-microsoft-prod.deb
+
+  # Install .Net Runtime 8.0
+  - apt-get update
+  - apt-get install -y aspnetcore-runtime-8.0
+
+  # Install Docker
+  - apt-get install -y ca-certificates curl
+  - install -m 0755 -d /etc/apt/keyrings
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+  - chmod a+r /etc/apt/keyrings/docker.asc
+  - echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+  - apt-get update
+  - apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+  # Pull and run your Docker app
+  - docker run -d -p 8080:8080 zekath/mydotnetapp:latest
+  - docker run -d   --name watchtower   -v /var/run/docker.sock:/var/run/docker.sock   containrrr/watchtower   --interval 60
+
+# Create a service for the .NET application
+write_files:
+  - path: /etc/systemd/system/GithubActionsDemo.service
+    content: |
+      [Unit]
+      Description=ASP.NET Web App running on Ubuntu
+
+      [Service]
+      WorkingDirectory=/opt/GithubActionsDemo
+      ExecStart=/usr/bin/dotnet /opt/GithubActionsDemo/GithubActionsDemo.dll
+      Restart=always
+      RestartSec=10
+      KillSignal=SIGINT
+      SyslogIdentifier=GithubActionsDemo
+      User=www-data
+      Environment=ASPNETCORE_ENVIRONMENT=Production
+      Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+      Environment="ASPNETCORE_URLS=http://*:8080"
+
+      [Install]
+      WantedBy=multi-user.target      
+    owner: root:root
+    permissions: '0644'
+
+systemd:
+  units:
+    - name: GithubActionsDemo.service
+      enabled: true
