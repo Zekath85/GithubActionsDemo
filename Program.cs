@@ -5,8 +5,8 @@ builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// Explicitly set Kestrel to listen on port 5000
-app.Urls.Add("http://*:5000");
+// Explicitly set Kestrel to listen on port 8080
+app.Urls.Add("http://*:8080");
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -24,8 +24,5 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapRazorPages();
-
-// Listen on port 5000
-app.Urls.Add("http://*:5000");
 
 app.Run();
